@@ -1,0 +1,5 @@
+nbproject/
+build/
+dist/
+*.o
+.dep.inc
