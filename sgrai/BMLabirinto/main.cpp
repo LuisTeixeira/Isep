@@ -101,6 +101,7 @@ typedef struct MODELO{
     StudioModel   homer[NUM_JANELAS];   // Modelo Homer
     GLboolean     andar;
     GLuint        prev;
+    GLuint         inicioChoque;
 }MODELO;
 
 /////////////////////////////////////
@@ -239,7 +240,13 @@ void strokeCenterString(char *str,double x, double y, double z, double s)
 
 GLboolean detectaColisao(GLfloat nx,GLfloat nz)
 {
-
+    int i = nz + (MAZE_HEIGHT*0.5) - 1.0 + 0.5;
+    int j = nx + (MAZE_WIDTH*0.5 ) - 1.0 + 0.5;
+    
+    if (mazedata[i][j] == '*') {        
+         return GL_TRUE;      
+    }
+    
   return GL_FALSE;
 }
 
@@ -266,18 +273,22 @@ void desenhaCubo()
                             {0.5,0.5,0.5}, 
                             {-0.5,0.5,0.5}};
   GLfloat normais[][3] = {  {0,0,-1}, 
-                            // acrescentar as outras normais...
+                            {0,1,0},   
+                            {-1,0,0},   
+                            {1,0,0},   
+                            {0,0,1},   
+                            {0,-1,0}
                          };
 
 
   // glBindTexture(GL_TEXTURE_2D, texID);
 
   desenhaPoligono(vertices[1],vertices[0],vertices[3],vertices[2],normais[0]);
-  desenhaPoligono(vertices[2],vertices[3],vertices[7],vertices[6],normais[0]);
-  desenhaPoligono(vertices[3],vertices[0],vertices[4],vertices[7],normais[0]);
-  desenhaPoligono(vertices[6],vertices[5],vertices[1],vertices[2],normais[0]);
-  desenhaPoligono(vertices[4],vertices[5],vertices[6],vertices[7],normais[0]);
-  desenhaPoligono(vertices[5],vertices[4],vertices[0],vertices[1],normais[0]);
+  desenhaPoligono(vertices[2],vertices[3],vertices[7],vertices[6],normais[1]);
+  desenhaPoligono(vertices[3],vertices[0],vertices[4],vertices[7],normais[2]);
+  desenhaPoligono(vertices[6],vertices[5],vertices[1],vertices[2],normais[3]);
+  desenhaPoligono(vertices[4],vertices[5],vertices[6],vertices[7],normais[4]);
+  desenhaPoligono(vertices[5],vertices[4],vertices[0],vertices[1],normais[5]);
 
   //glBindTexture(GL_TEXTURE_2D, NULL);
 }
@@ -378,7 +389,21 @@ void desenhaModelo()
 
 void desenhaLabirinto()
 {
-    // c�digo para desenhar o labirinto
+    float centro = 1;    
+    glPushMatrix(); 
+    glTranslatef(-(MAZE_WIDTH*0.5) + centro, 0.5, -(MAZE_HEIGHT*0.5) + centro );
+     
+    for (int x=0; x<=MAZE_WIDTH; ++x) {            
+        for (int z=0; z<=MAZE_HEIGHT; ++z) {
+            if(mazedata[z][x] == '*') {
+                glPushMatrix();
+                    glTranslatef(x,0,z);
+                    desenhaCubo();
+                glPopMatrix();
+            }
+        }
+    }
+    glPopMatrix();
 
 }
 
@@ -535,7 +560,8 @@ void displayMainWindow()
 void Timer(int value)
 {
     GLfloat nx=0,nz=0;
-    GLboolean andar=GL_FALSE;
+    GLboolean andar=GL_TRUE;
+    int homerSequence = modelo.homer[JANELA_NAVIGATE].GetSequence();
 
 	GLuint curr = glutGet(GLUT_ELAPSED_TIME);
   // calcula velocidade baseado no tempo passado
@@ -544,22 +570,46 @@ void Timer(int value)
 	glutTimerFunc(estado.timer, Timer, 0);
 	modelo.prev = curr;
 
-    
+        if(modelo.inicioChoque!=0) {
+            if(curr - modelo.inicioChoque > 600) {
+                modelo.inicioChoque=0;
+                homerSequence=0;
+            }
+        }
   if(estado.teclas.up){
+     nx=modelo.objecto.pos.x + (velocidade * cos(modelo.objecto.dir));
+     nz=modelo.objecto.pos.z - (velocidade * sin(modelo.objecto.dir));
     // calcula nova posi��o nx,nz
 		if(!detectaColisao(nx,nz)){
-//			modelo.objecto.pos.x=nx;
-//			modelo.objecto.pos.z=nz;
-		}
-    andar=GL_TRUE;
+                    homerSequence=3;
+			modelo.objecto.pos.x=nx;
+			modelo.objecto.pos.z=nz;
+                        andar = GL_TRUE;
+		} else {
+                    if (andar == GL_TRUE) {
+                    homerSequence = 20;                    
+                    modelo.inicioChoque=curr;  
+                    andar=GL_FALSE;
+                    }
+                }
+   
 	}
 	if(estado.teclas.down){
     // calcula nova posi��o nx,nz
+            nx=modelo.objecto.pos.x - (velocidade * cos(modelo.objecto.dir));
+            nz=modelo.objecto.pos.z + (velocidade * sin(modelo.objecto.dir));
 		if(!detectaColisao(nx,nz)){
-//			modelo.objecto.pos.x=nx;
-//			modelo.objecto.pos.z=nz;
-		}
-    andar=GL_TRUE;
+                    homerSequence=3;
+			modelo.objecto.pos.x=nx;
+			modelo.objecto.pos.z=nz;
+                        andar = GL_TRUE;
+		} else {
+                    if (andar == GL_TRUE) {
+                    homerSequence = 20;                    
+                    modelo.inicioChoque=curr;  
+                    andar=GL_FALSE;
+                    }
+                }
 	}
 	if(estado.teclas.left){
     // rodar camara e objecto
@@ -571,6 +621,10 @@ void Timer(int value)
 // Sequencias - 0(parado) 3(andar) 20(choque)
 //  modelo.homer[JANELA_NAVIGATE].GetSequence()  le Sequencia usada pelo homer
 //  modelo.homer[JANELA_NAVIGATE].SetSequence()  muda Sequencia usada pelo homer
+ 
+if(modelo.homer[JANELA_NAVIGATE].GetSequence() != homerSequence){
+        modelo.homer[JANELA_NAVIGATE].SetSequence(homerSequence);  
+}
 
   redisplayAll();
 	
