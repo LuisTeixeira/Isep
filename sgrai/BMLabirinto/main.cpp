@@ -431,27 +431,26 @@ void mouseNavigateSubwindow(int button, int state, int x, int y) {
 void setNavigateSubwindowCamera(camera_t *cam, objecto_t obj) {
 
     pos_t center;
-    /*
-            if(estado.vista[JANELA_NAVIGATE])
-      {
-     */
-    float raio=1.0;
-    
+
+    float raio;
+
+    if (estado.vista[JANELA_NAVIGATE]) {
+        raio = 0.1;
+    } else {
+        raio = 0.9;
+    }
+
     center.x = obj.pos.x;
     center.y = obj.pos.y + .2;
     center.z = obj.pos.z;
-    
-    cam->eye.x = center.x - raio * cos(cam->dir_long) * cos(cam->dir_lat);
-    cam->eye.y = center.y - raio                      * sin(cam->dir_lat);
-    cam->eye.z = center.z + raio * sin(cam->dir_long) * cos(cam->dir_lat);
-    
-    /*
-      }
-      else
-      {
 
-      }
-     */
+    cam->eye.x = center.x - raio * cos(cam->dir_long) * cos(cam->dir_lat);    
+    cam->eye.y = center.y - raio * sin(cam->dir_lat);
+    cam->eye.z = center.z + raio * sin(cam->dir_long) * cos(cam->dir_lat);        
+    if (!estado.vista[JANELA_NAVIGATE] && detectaColisao(cam->eye.x, cam->eye.z)) {
+      cam->eye.y += 1.25;
+    }
+
     gluLookAt(cam->eye.x, cam->eye.y, cam->eye.z, center.x, center.y, center.z, 0, 1, 0);
 }
 
@@ -467,6 +466,7 @@ void displayNavigateSubwindow() {
     glCallList(modelo.chao[JANELA_NAVIGATE]);
 
     if (!estado.vista[JANELA_NAVIGATE]) {
+
         glPushMatrix();
         glTranslatef(modelo.objecto.pos.x, modelo.objecto.pos.y, modelo.objecto.pos.z);
         glRotatef(GRAUS(modelo.objecto.dir), 0, 1, 0);
@@ -489,11 +489,13 @@ void setTopSubwindowCamera(camera_t *cam, objecto_t obj) {
     cam->eye.z = obj.pos.z;
     if (estado.vista[JANELA_TOP])
         gluLookAt(obj.pos.x, CHAO_DIMENSAO * .2, obj.pos.z, obj.pos.x, obj.pos.y, obj.pos.z, 0, 0, -1);
+
     else
         gluLookAt(obj.pos.x, CHAO_DIMENSAO * 2, obj.pos.z, obj.pos.x, obj.pos.y, obj.pos.z, 0, 0, -1);
 }
 
 void displayTopSubwindow() {
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLoadIdentity();
@@ -521,6 +523,7 @@ void displayTopSubwindow() {
 //mainWindow
 
 void redisplayAll(void) {
+
     glutSetWindow(estado.mainWindow);
     glutPostRedisplay();
     glutSetWindow(estado.topSubwindow);
@@ -530,6 +533,7 @@ void redisplayAll(void) {
 }
 
 void displayMainWindow() {
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glutSwapBuffers();
 }
@@ -568,8 +572,8 @@ void Timer(int value) {
                 andar = GL_FALSE;
             }
         }
-    } 
-    
+    }
+
     if (estado.teclas.down) {
         // calcula nova posi��o nx,nz
         nx = modelo.objecto.pos.x - (velocidade * cos(modelo.objecto.dir));
@@ -586,15 +590,15 @@ void Timer(int value) {
                 andar = GL_FALSE;
             }
         }
-    } 
-    
+    }
+
     if (estado.teclas.left) {
         modelo.objecto.dir += 0.1;
-        estado.camera.dir_long +=0.1;        
+        estado.camera.dir_long += 0.1;
     }
     if (estado.teclas.right) {
         modelo.objecto.dir -= 0.1;
-        estado.camera.dir_long -=0.1;
+        estado.camera.dir_long -= 0.1;
     }
 
     if (!estado.teclas.up && !estado.teclas.down) {
@@ -605,6 +609,7 @@ void Timer(int value) {
     //  modelo.homer[JANELA_NAVIGATE].SetSequence()  muda Sequencia usada pelo homer
 
     if (modelo.homer[JANELA_NAVIGATE].GetSequence() != homerSequence) {
+
         modelo.homer[JANELA_NAVIGATE].SetSequence(homerSequence);
     }
 
@@ -613,6 +618,7 @@ void Timer(int value) {
 }
 
 void imprime_ajuda(void) {
+
     printf("\n\nDesenho de um quadrado\n");
     printf("h,H - Ajuda \n");
     printf("******* Diversos ******* \n");
@@ -662,6 +668,7 @@ void Key(unsigned char key, int x, int y) {
             glutSetWindow(estado.topSubwindow);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glDisable(GL_TEXTURE_2D);
+
             break;
     }
 
@@ -691,6 +698,7 @@ void SpecialKey(int key, int x, int y) {
             break;
         case GLUT_KEY_PAGE_DOWN:
             if (estado.camera.fov < 130) {
+
                 estado.camera.fov++;
                 glutSetWindow(estado.navigateSubwindow);
                 reshapeNavigateSubwindow(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
@@ -711,6 +719,7 @@ void SpecialKeyUp(int key, int x, int y) {
         case GLUT_KEY_LEFT: estado.teclas.left = GL_FALSE;
             break;
         case GLUT_KEY_RIGHT: estado.teclas.right = GL_FALSE;
+
             break;
     }
 }
@@ -719,6 +728,7 @@ void SpecialKeyUp(int key, int x, int y) {
 // Inicializa��es
 
 void createDisplayLists(int janelaID) {
+
     modelo.labirinto[janelaID] = glGenLists(2);
     glNewList(modelo.labirinto[janelaID], GL_COMPILE);
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT);
@@ -756,6 +766,7 @@ AUX_RGBImageRec *LoadBMP(char *Filename) // Loads A Bitmap Image
     if (File) // Does The File Exist?
     {
         fclose(File); // Close The Handle
+
         return auxDIBImageLoad(Filename); // Load The Bitmap And Return A Pointer
     }
 
@@ -808,6 +819,7 @@ void createTextures(GLuint texID[]) {
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         gluBuild2DMipmaps(GL_TEXTURE_2D, 3, w, h, GL_RGB, GL_UNSIGNED_BYTE, image);
     } else {
+
         printf("Textura %s not Found\n", NOME_TEXTURA_CHAO);
         exit(0);
     }
@@ -849,6 +861,7 @@ void init() {
 
     if (glutGetWindow() == estado.mainWindow)
         glClearColor(0.8f, 0.8f, 0.8f, 0.0f);
+
     else
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
