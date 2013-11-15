@@ -435,12 +435,16 @@ void setNavigateSubwindowCamera(camera_t *cam, objecto_t obj) {
             if(estado.vista[JANELA_NAVIGATE])
       {
      */
-    cam->eye.x = obj.pos.x - 1;
-    cam->eye.y = obj.pos.y + .2;
-    cam->eye.z = obj.pos.z - 1;
+    float raio=1.0;
+    
     center.x = obj.pos.x;
     center.y = obj.pos.y + .2;
     center.z = obj.pos.z;
+    
+    cam->eye.x = center.x - raio * cos(cam->dir_long) * cos(cam->dir_lat);
+    cam->eye.y = center.y - raio                      * sin(cam->dir_lat);
+    cam->eye.z = center.z + raio * sin(cam->dir_long) * cos(cam->dir_lat);
+    
     /*
       }
       else
@@ -537,7 +541,7 @@ void Timer(int value) {
 
     GLuint curr = glutGet(GLUT_ELAPSED_TIME);
     // calcula velocidade baseado no tempo passado
-    float velocidade = modelo.objecto.vel * (curr - modelo.prev)*0.001;
+    float velocidade = modelo.objecto.vel * (curr - modelo.prev)*0.002;
 
     glutTimerFunc(estado.timer, Timer, 0);
     modelo.prev = curr;
@@ -564,14 +568,14 @@ void Timer(int value) {
                 andar = GL_FALSE;
             }
         }
-
-    }
+    } 
+    
     if (estado.teclas.down) {
         // calcula nova posi��o nx,nz
         nx = modelo.objecto.pos.x - (velocidade * cos(modelo.objecto.dir));
         nz = modelo.objecto.pos.z + (velocidade * sin(modelo.objecto.dir));
         if (!detectaColisao(nx, nz)) {
-            homerSequence = 3;
+            homerSequence = 10;
             modelo.objecto.pos.x = nx;
             modelo.objecto.pos.z = nz;
             andar = GL_TRUE;
@@ -582,14 +586,20 @@ void Timer(int value) {
                 andar = GL_FALSE;
             }
         }
-    }
+    } 
+    
     if (estado.teclas.left) {
         modelo.objecto.dir += 0.1;
+        estado.camera.dir_long +=0.1;        
     }
     if (estado.teclas.right) {
         modelo.objecto.dir -= 0.1;
+        estado.camera.dir_long -=0.1;
     }
 
+    if (!estado.teclas.up && !estado.teclas.down) {
+        homerSequence = 0;
+    }
     // Sequencias - 0(parado) 3(andar) 20(choque)
     //  modelo.homer[JANELA_NAVIGATE].GetSequence()  le Sequencia usada pelo homer
     //  modelo.homer[JANELA_NAVIGATE].SetSequence()  muda Sequencia usada pelo homer
