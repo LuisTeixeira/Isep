@@ -240,13 +240,24 @@ GLboolean detectaColisao(GLfloat nx, GLfloat nz) {
     return GL_FALSE;
 }
 
-void desenhaPoligono(GLfloat a[], GLfloat b[], GLfloat c[], GLfloat d[], GLfloat normal[]) {
+void desenhaPoligono(GLfloat a[], GLfloat b[], GLfloat c[], GLfloat d[], GLfloat normal[]) {     
+
+    int x = rand() % 4;
+    int y = rand() % 4;
+    
+    float cX = 0.25 * x;
+    float cY = 0.25 * y;
+    
     glBegin(GL_POLYGON);
-    glNormal3fv(normal);
-    glVertex3fv(a);
-    glVertex3fv(b);
-    glVertex3fv(c);
-    glVertex3fv(d);
+        glNormal3fv(normal);
+        glTexCoord2f(cX,cY);
+        glVertex3fv(a);
+        glTexCoord2f(cX,cY + 0.25);
+        glVertex3fv(b);
+        glTexCoord2f(cX + 0.25,cY + 0.25);
+        glVertex3fv(c);
+        glTexCoord2f(cX + 0.25,cY);
+        glVertex3fv(d);
     glEnd();
 }
 
@@ -270,8 +281,9 @@ void desenhaCubo() {
         {0, -1, 0}
     };
 
-
-    // glBindTexture(GL_TEXTURE_2D, texID);
+    //glTexEnvf(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    
+    //glBindTexture(GL_TEXTURE_2D, modelo.texID[JANELA_NAVIGATE][ID_TEXTURA_CUBOS] );
 
     desenhaPoligono(vertices[1], vertices[0], vertices[3], vertices[2], normais[0]);
     desenhaPoligono(vertices[2], vertices[3], vertices[7], vertices[6], normais[1]);
@@ -281,35 +293,69 @@ void desenhaCubo() {
     desenhaPoligono(vertices[5], vertices[4], vertices[0], vertices[1], normais[5]);
 
     //glBindTexture(GL_TEXTURE_2D, NULL);
+    
 }
 
 void desenhaBussola(int width, int height) // largura e altura da janela
 {
+    
+    // Altera viewport e projec��o para 2D
+    //(copia de um reshape de um projecto 2D)
+    glViewport(width - 60, 0, 60, 60);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
 
-    // Altera viewport e projec��o para 2D (copia de um reshape de um projecto 2D)
+    gluOrtho2D(-30, 30, -30, 30);
 
-    //....
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
     // Blending (transparencias)
-    /*  glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-            glDisable(GL_LIGHTING);
-            glDisable(GL_DEPTH_TEST);
-            glDisable(GL_COLOR_MATERIAL);
-     */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_COLOR_MATERIAL);
 
-    //desenha bussola 2D
 
-    //glColor3f(1,0.4,0.4);
-    //strokeCenterString("N", 0, 20, 0 , 0.1); // string, x ,y ,z ,scale
+    //desenha bussola 2D    
+    glPushMatrix();
+        glRotatef(-GRAUS(modelo.objecto.dir) + 90, 0,0,1);
+        
+        glPushMatrix();
+        glBegin(GL_POLYGON);
+            glColor3f(1, 0.3, 0.3);
+            glVertex3d(-15, 0, 0 );
+            glVertex3d(15, 0, 0);
+            glVertex3d(0, 30, 0);
+            glEnd();
+        glPopMatrix();
 
+        glPushMatrix();
+        glBegin(GL_POLYGON);
+            glColor3f(1, 0.5, 0.5);
+            glVertex3d(-15, 0, 0 );
+            glVertex3d(15, 0, 0);
+            glVertex3d(0, -30, 0);
+            glEnd();
+        glPopMatrix();
+
+        glPushMatrix();
+            glTranslatef(0,10,0);
+            glRotatef(GRAUS(modelo.objecto.dir) + 90, 0,0,1);
+            glColor3f(0.2,0.2,0.2);
+            strokeCenterString("N", 0, 0, 0, 0.1); // string, x ,y ,z ,scale
+            glEnd();
+        glPopMatrix();
+        
+    glPopMatrix();
 
     // rop�e estado
-    /* glDisable(GL_BLEND);
-           glEnable(GL_LIGHTING);
-           glEnable(GL_COLOR_MATERIAL);
-           glEnable(GL_DEPTH_TEST);
-     */
+    glDisable(GL_BLEND);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_DEPTH_TEST);
+
 
     //rep�e projec��o chamando redisplay
     reshapeNavigateSubwindow(width, height);
@@ -317,26 +363,59 @@ void desenhaBussola(int width, int height) // largura e altura da janela
 }
 
 void desenhaModeloDir(objecto_t obj, int width, int height) {
-    // Altera viewport e projec��o
-    //....
+    // Altera viewport e projec��o para 2D
+    //(copia de um reshape de um projecto 2D)
+    glViewport(width - 60, 0, 60, 60);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    gluOrtho2D(-30, 30, -30, 30);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
     // Blending (transparencias)
-    /*
-      glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-            glDisable(GL_LIGHTING);
-            glDisable(GL_DEPTH_TEST);
-     */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_COLOR_MATERIAL);
 
-    //desenha Seta
+
+    //desenha bussola 2D    
+    glPushMatrix();
+        glRotatef(GRAUS(obj.dir), 0,0,1);
+        
+        glPushMatrix();
+        glBegin(GL_POLYGON);
+            glColor3f(0.3, 0.3, 1);
+            glVertex3d(-25, 10, 0 );
+            glVertex3d(-25,-10, 0);
+            glVertex3d(5, -10, 0);
+            glVertex3d(5,  10, 0);
+            glEnd();
+        glPopMatrix();
+
+        glPushMatrix();
+        glBegin(GL_POLYGON);
+            glColor3f(0.5, 0.5, 1);
+            glVertex3d(5, -20, 0 );
+            glVertex3d(5, 20, 0);
+            glVertex3d(25, 0, 0);
+            glEnd();
+        glPopMatrix();
+        
+    glPopMatrix();
 
     // rop�e estado
-    /*  glDisable(GL_BLEND);
-            glEnable(GL_LIGHTING);
-            glEnable(GL_DEPTH_TEST);
-     */
+    glDisable(GL_BLEND);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_DEPTH_TEST);
+
+
     //rep�e projec��o chamando redisplay
-    redisplayTopSubwindow(width, height);
+    reshapeNavigateSubwindow(width, height);
 }
 
 void desenhaAngVisao(camera_t *cam) {
@@ -376,6 +455,7 @@ void desenhaModelo() {
 void desenhaLabirinto() {
     float centro = 1;
     glPushMatrix();
+    glColor3f(0.9,0.8,0.8);
     glTranslatef(-(MAZE_WIDTH * 0.5) + centro, 0.5, -(MAZE_HEIGHT * 0.5) + centro);
 
     for (int x = 0; x <= MAZE_WIDTH; ++x) {
@@ -444,11 +524,11 @@ void setNavigateSubwindowCamera(camera_t *cam, objecto_t obj) {
     center.y = obj.pos.y + .2;
     center.z = obj.pos.z;
 
-    cam->eye.x = center.x - raio * cos(cam->dir_long) * cos(cam->dir_lat);    
+    cam->eye.x = center.x - raio * cos(cam->dir_long) * cos(cam->dir_lat);
     cam->eye.y = center.y - raio * sin(cam->dir_lat);
-    cam->eye.z = center.z + raio * sin(cam->dir_long) * cos(cam->dir_lat);        
+    cam->eye.z = center.z + raio * sin(cam->dir_long) * cos(cam->dir_lat);
     if (!estado.vista[JANELA_NAVIGATE] && detectaColisao(cam->eye.x, cam->eye.z)) {
-      cam->eye.y += 1.25;
+        cam->eye.y += 1.25;
     }
 
     gluLookAt(cam->eye.x, cam->eye.y, cam->eye.z, center.x, center.y, center.z, 0, 1, 0);
@@ -732,7 +812,9 @@ void createDisplayLists(int janelaID) {
     modelo.labirinto[janelaID] = glGenLists(2);
     glNewList(modelo.labirinto[janelaID], GL_COMPILE);
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT);
+    glBindTexture(GL_TEXTURE_2D, modelo.texID[janelaID][ID_TEXTURA_CUBOS] );
     desenhaLabirinto();
+    glBindTexture(GL_TEXTURE_2D, NULL );
     glPopAttrib();
     glEndList();
 
