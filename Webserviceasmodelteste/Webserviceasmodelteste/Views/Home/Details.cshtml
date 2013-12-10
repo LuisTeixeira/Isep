@@ -1,0 +1,15 @@
+﻿@model Webserviceasmodelteste.Models.Book
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+<h4>@Html.NameFor(model => model.id)</h4>
+<h5>@Html.DisplayFor(model => model.id)</h5>
+
+<h4>@Html.NameFor(model => model.name)</h4>
+<h5>@Html.DisplayFor(model => model.name)</h5>
+
+<h4>@Html.NameFor(model => model.price)</h4>
+<h5>@Html.DisplayFor(model => model.price)</h5>

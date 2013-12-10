@@ -1,0 +1,9 @@
+﻿@model List<Webserviceasmodelteste.Models.Book>
+@{
+    ViewBag.Title = "Index";
+}
+
+@foreach(var item in Model)
+{
+    @Html.ActionLink(item.name, "details", new {id = item.id}); <br />
+}
